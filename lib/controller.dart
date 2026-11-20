@@ -2508,6 +2508,49 @@ class AppController {
     }
   }
 
+  /// Imports local profile files as new profiles.
+  ///
+  /// Shared by "Add profile -> File" and the drag-and-drop entry point so both
+  /// behave identically: each failure is reported on its own, and any success
+  /// leaves the user on the Profiles page.
+  Future<void> importProfileFiles(
+    List<({String name, Future<Uint8List> Function() readBytes})> files,
+  ) async {
+    if (files.isEmpty) return;
+
+    _ref.read(loadingProvider.notifier).value = true;
+    int successCount = 0;
+    try {
+      for (final file in files) {
+        try {
+          final bytes = await file.readBytes();
+          if (bytes.isEmpty) continue;
+          final profile = await Profile.normal(
+            label: file.name,
+          ).saveFile(bytes);
+          await addProfile(profile);
+          successCount++;
+        } on Object catch (e) {
+          if (!context.mounted) break;
+          await globalState.showMessage(
+            title: '${file.name} (${appLocalizations.add})',
+            message: TextSpan(text: e.formatError),
+            cancelable: false,
+          );
+        }
+      }
+
+      if (successCount > 0) {
+        globalState.navigatorKey.currentState?.popUntil(
+          (route) => route.isFirst,
+        );
+        toProfiles();
+      }
+    } finally {
+      _ref.read(loadingProvider.notifier).value = false;
+    }
+  }
+
   Future<void> addProfileFormFile() async {
     final platformFiles = await safeRun(
       () => picker.pickerFiles(allowMultiple: true),
@@ -2529,36 +2572,10 @@ class AppController {
       return;
     }
 
-    _ref.read(loadingProvider.notifier).value = true;
-    int successCount = 0;
-    try {
-      for (final platformFile in validFiles) {
-        try {
-          final bytes = await platformFile.readAsBytes();
-          if (bytes.isEmpty) continue;
-          final profile = await Profile.normal(label: platformFile.name)
-              .saveFile(bytes);
-          await addProfile(profile);
-          successCount++;
-        } on Object catch (e) {
-          if (!context.mounted) break;
-          await globalState.showMessage(
-            title: '${platformFile.name} (${appLocalizations.add})',
-            message: TextSpan(text: e.formatError),
-            cancelable: false,
-          );
-        }
-      }
-
-      if (successCount > 0) {
-        globalState.navigatorKey.currentState?.popUntil(
-          (route) => route.isFirst,
-        );
-        toProfiles();
-      }
-    } finally {
-      _ref.read(loadingProvider.notifier).value = false;
-    }
+    await importProfileFiles([
+      for (final file in validFiles)
+        (name: file.name, readBytes: file.readAsBytes),
+    ]);
   }
 
   Future<void> addProfileFormQrCode() async {
