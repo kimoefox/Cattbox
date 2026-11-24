@@ -83,17 +83,17 @@ jobs:
             compatible: true
             standard: true
           - platform: macos
-            os: macos-26
+            os: macos-15
             arch: arm64
           - platform: macos
-            os: macos-26
+            os: macos-15
             arch: amd64
           - platform: macos
-            os: macos-26
+            os: macos-15
             arch: arm64
             standard: true
           - platform: macos
-            os: macos-26
+            os: macos-15
             arch: amd64
             standard: true
           - platform: linux
@@ -204,7 +204,7 @@ jobs:
 
       - name: Select Xcode (macOS)
         if: matrix.platform == 'macos'
-        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
