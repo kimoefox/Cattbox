@@ -1,0 +1,60 @@
+name: publish-artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Workflow run ID to download artifacts from'
+        required: true
+        type: string
+      tag:
+        description: 'Release tag name (e.g. v1.20.0)'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Download existing artifacts from run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p raw dist
+          gh run download "${{ inputs.run_id }}" --dir raw
+          find raw -type f -name 'Bettbox-*' -exec mv -f {} dist/ \;
+          ls -lh dist/
+
+      - name: Generate checksums and release notes
+        run: |
+          cd dist
+          find . -maxdepth 1 -type f -name 'Bettbox-*' -printf '%f\n' | sort | xargs -d '\n' sha256sum > sha256sums.txt
+          cd ..
+          cat > release.md <<'EOF'
+          - Based on Bettbox v1.20.0 with `AirportR/mihomo` core (`x365` / `Miu` / `Ninja` protocols) and drag-and-drop YAML profile import.
+          - Note: macOS Apple Silicon (`arm64`) and standard `amd64` DMGs are queued on GitHub Actions and will be uploaded here automatically once built.
+          EOF
+          version=$(echo "${{ inputs.tag }}" | sed 's/^v//')
+          base_version=$(echo "$version" | sed 's/-pre[0-9]*//')
+          sed -e "s|BASE_VERSION|$base_version|g" -e "s|VERSION|$version|g" ./.github/release_template.md >> release.md
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ inputs.tag }}" >/dev/null 2>&1; then
+            gh release edit "${{ inputs.tag }}" --notes-file release.md
+            gh release upload "${{ inputs.tag }}" dist/* --clobber
+          else
+            gh release create "${{ inputs.tag }}" dist/* \
+              --title "${{ inputs.tag }}" \
+              --notes-file release.md
+          fi
