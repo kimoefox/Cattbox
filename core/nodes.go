@@ -10,7 +10,6 @@ import (
 	"github.com/dlclark/regexp2"
 	"github.com/metacubex/mihomo/adapter"
 	"github.com/metacubex/mihomo/common/convert"
-	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/common/yaml"
 	"github.com/metacubex/mihomo/config"
 )
@@ -197,7 +196,7 @@ func matchesGroupFilter(group map[string]any, name string) bool {
 		return true
 	}
 	for _, part := range strings.Split(filter, "`") {
-		reg, err := utils.CompileRegexp(part, regexp2.None)
+		reg, err := compileRegexp(part, regexp2.None)
 		if err != nil {
 			continue
 		}

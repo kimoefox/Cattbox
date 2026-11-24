@@ -5,7 +5,6 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/metacubex/mihomo/adapter/outbound"
 	cProxy "github.com/metacubex/mihomo/constant"
 	cp "github.com/metacubex/mihomo/constant/provider"
 	"github.com/metacubex/mihomo/tunnel"
@@ -151,8 +150,16 @@ func closeStaleWireGuard(p cProxy.Proxy) {
 	_ = p.Adapter().Close()
 }
 
+// idleCloser mirrors the CloseIdle hook the upstream core expects from its
+// vendored mihomo tree. Declaring it locally keeps the interface assertion
+// working without requiring the submodule to export the same type, so the
+// fork can stay on a mihomo revision that does not have the hook yet.
+type idleCloser interface {
+	CloseIdle()
+}
+
 func closeIdleOutbound(p cProxy.Proxy) {
-	if closer, ok := p.Adapter().(outbound.IdleCloser); ok {
+	if closer, ok := p.Adapter().(idleCloser); ok {
 		closer.CloseIdle()
 	}
 }

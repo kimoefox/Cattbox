@@ -20,7 +20,6 @@ import (
 	"github.com/metacubex/mihomo/adapter/provider"
 	"github.com/metacubex/mihomo/common/convert"
 	"github.com/metacubex/mihomo/common/structure"
-	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/common/yaml"
 	"github.com/metacubex/mihomo/component/age"
 	mihomoHttp "github.com/metacubex/mihomo/component/http"
@@ -357,7 +356,7 @@ func filterProviderProxies(mappings []map[string]any, schema *expandProviderSche
 	var excludeFilters []*regexp2.Regexp
 	if schema.ExcludeFilter != "" {
 		for pattern := range strings.SplitSeq(schema.ExcludeFilter, "`") {
-			reg, err := utils.CompileRegexp(pattern, regexp2.None)
+			reg, err := compileRegexp(pattern, regexp2.None)
 			if err != nil {
 				return nil, fmt.Errorf("invalid excludeFilter regex: %w", err)
 			}
@@ -366,7 +365,7 @@ func filterProviderProxies(mappings []map[string]any, schema *expandProviderSche
 	}
 	var filters []*regexp2.Regexp
 	for pattern := range strings.SplitSeq(schema.Filter, "`") {
-		reg, err := utils.CompileRegexp(pattern, regexp2.None)
+		reg, err := compileRegexp(pattern, regexp2.None)
 		if err != nil {
 			return nil, fmt.Errorf("invalid filter regex: %w", err)
 		}

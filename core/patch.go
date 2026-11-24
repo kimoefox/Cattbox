@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/dlclark/regexp2"
-	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/common/yaml"
 	"github.com/metacubex/mihomo/config"
 	LC "github.com/metacubex/mihomo/listener/config"
@@ -363,7 +362,7 @@ func patchProxyGroups(raw *config.RawConfig, params *PatchParams) {
 	if raw.ProxyGroup != nil && (filter != "" || params.HealthCheckTimeout != defaultHealthCheckTimeout) {
 		var filterRegex *regexp2.Regexp
 		if filter != "" {
-			filterRegex, _ = utils.CompileRegexp(filter, regexp2.ECMAScript)
+			filterRegex, _ = compileRegexp(filter, regexp2.ECMAScript)
 		}
 		var protected map[string]bool
 		var excluded map[string]bool
