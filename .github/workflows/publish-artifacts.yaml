@@ -43,7 +43,7 @@ jobs:
           find . -maxdepth 1 -type f -name 'Bettbox-*' -printf '%f\n' | sort | xargs -d '\n' sha256sum > sha256sums.txt
           cd ..
           cat > release.md <<'EOF'
-          - Based on Bettbox v1.20.0 with `AirportR/mihomo` core (`x365` / `Miu` / `Ninja` protocols) and drag-and-drop YAML profile import.
+          - Based on Bettbox v1.20.0 with `kimoefox/Clash.Meta` (`Alpha`) core (`MetaCubeX/mihomo` Alpha + `x365` / `Miu` / `Ninja` protocols + Bettbox patches) and drag-and-drop YAML profile import.
           - Note: macOS Apple Silicon (`arm64`) and standard `amd64` DMGs are queued on GitHub Actions and will be uploaded here automatically once built.
           EOF
           version=$(echo "${{ inputs.tag }}" | sed 's/^v//')

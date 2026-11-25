@@ -1,4 +1,4 @@
 [submodule "core/mihomo"]
 	path = core/mihomo
-	url = https://github.com/AirportR/mihomo.git
-	branch = cattbox
+	url = https://github.com/kimoefox/Clash.Meta.git
+	branch = Alpha
